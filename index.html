@@ -125,12 +125,12 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(15px);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 5;
+      z-index: 10;
       border-radius: 12px;
       flex-direction: column;
       gap: 15px;
@@ -152,12 +152,47 @@
       overflow: hidden;
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(177, 13, 46, 0.1);
+      position: relative;
     }
 
     .iframe-container iframe {
       width: 100%;
       height: 100%;
       border: 0;
+    }
+
+    /* Loading state for iframe */
+    .iframe-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 15px;
+      z-index: 5;
+    }
+
+    .iframe-loading.hidden {
+      display: none;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--accent);
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     /* Controls */
@@ -340,8 +375,8 @@
           <button id="unlockBtn" class="btn">Unlock</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-          <p class="hint">This website uses the birthday only as a code. It won't be sent anywhere — stored locally in
-            your browser session if you choose.</p>
+          <!-- <p class="hint">This website uses the birthday only as a code. It won't be sent anywhere — stored locally in
+            your browser session if you choose.</p> -->
         </div>
         <p id="modalError" class="small" style="color:#9b2d3a;margin-top:8px;min-height:18px"></p>
       </div>
@@ -367,21 +402,28 @@
           <div class="lock-icon">🔒</div>
           <h3 style="color: var(--accent-2); margin: 0; text-align: center;">Content Locked</h3>
           <p style="color: var(--muted); text-align: center; max-width: 300px; margin: 0;">
-            Enter your birthday code to unlock this content
+            Enter your birthday code to unlock and view the flower animation
           </p>
           <button id="unlockFromOverlay" class="btn">Enter Code</button>
         </div>
         
-        <!-- Flower content -->
+        <!-- Flower content container -->
         <div class="iframe-container">
-          <iframe src="flower.html" title="Flower Animation"></iframe>
+          <!-- Loading state for iframe -->
+          <div id="iframeLoading" class="iframe-loading">
+            <div class="loading-spinner"></div>
+            <p style="color: var(--accent-2); margin: 0;">Loading Flower Animation...</p>
+          </div>
+          
+          <!-- Iframe - initially empty, will be set after code entry -->
+          <iframe id="flowerIframe" title="Flower Animation"></iframe>
         </div>
       </div>
 
       <div style="display:flex;gap:12px;justify-content:space-between;align-items:center">
-        <p class="small">Beautiful flower for my Beautiful wifey!!!</p>
+        <p class="small">Beautiful flower for my Beautiful and Loving Person!!!</p>
         <div style="display:flex;gap:10px;align-items:center">
-          <button id="fireBtn" class="btn">Fireworks</button>
+          <button id="fireBtn" class="btn" disabled>Fireworks</button>
         </div>
       </div>
     </section>
@@ -432,6 +474,8 @@
       const modalError = document.getElementById('modalError');
       const blurOverlay = document.getElementById('blurOverlay');
       const unlockFromOverlay = document.getElementById('unlockFromOverlay');
+      const flowerIframe = document.getElementById('flowerIframe');
+      const iframeLoading = document.getElementById('iframeLoading');
 
       const mainContent = document.getElementById('mainContent');
       const userBadge = document.getElementById('userBadge');
@@ -491,6 +535,31 @@
         }, 3000);
       }
 
+      // Function to load the flower animation
+      function loadFlowerAnimation() {
+        // Show loading state
+        iframeLoading.classList.remove('hidden');
+        
+        // Set the iframe source to flower.html
+        flowerIframe.src = 'flower.html';
+        
+        // Hide loading state when iframe loads
+        flowerIframe.onload = function() {
+          iframeLoading.classList.add('hidden');
+        };
+        
+        // Handle iframe loading errors
+        flowerIframe.onerror = function() {
+          iframeLoading.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+              <h3 style="color: var(--accent-2);">Error Loading Animation</h3>
+              <p style="color: var(--muted);">Could not load flower.html</p>
+              <button onclick="loadFlowerAnimation()" class="btn" style="margin-top: 15px;">Try Again</button>
+            </div>
+          `;
+        };
+      }
+
       // Function to unlock the content
       function unlockContent() {
         // Hide modal and blur overlay
@@ -500,6 +569,9 @@
         
         // Enable fireworks button
         fireBtn.disabled = false;
+        
+        // Load the flower animation now that user is authenticated
+        loadFlowerAnimation();
       }
 
       // Function to lock the content
@@ -511,6 +583,10 @@
         
         // Disable fireworks button
         fireBtn.disabled = true;
+        
+        // Clear the iframe source to prevent loading
+        flowerIframe.src = '';
+        iframeLoading.classList.remove('hidden');
       }
 
       // Unlock with proper validation
@@ -741,6 +817,9 @@
 
       // Initial canvas sizing
       resizeCanvas();
+
+      // Make functions available globally for retry buttons
+      window.loadFlowerAnimation = loadFlowerAnimation;
     })();
   </script>
 </body>
