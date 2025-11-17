@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Love Island</title>
+  <style>
+    :root {
+      --bg: #ffefef;
+      --card: #fff5f6;
+      --accent: #ff3b6b;
+      --accent-2: #b10d2e;
+      --muted: #6b3b3b;
+      --glass: rgba(255, 255, 255, 0.6);
+      --shadow: 0 8px 24px rgba(177, 13, 46, 0.12);
+      --radius: 14px;
+      --smooth: cubic-bezier(.22, .9, .36, 1);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* Page layout */
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #fff6f7 0%, #ffecec 50%, #fff3f5 100%);
+      color: var(--muted);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width:980px) {
+      .container {
+        grid-template-columns: 1fr;
+        padding: 10px
+      }
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 6px 18px rgba(177, 13, 46, 0.25);
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--accent-2)
+    }
+
+    p.lead {
+      margin: 0;
+      color: #7b3b44;
+      font-size: 14px
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(177, 13, 46, 0.05);
+    }
+
+    /* Left column content */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Custom area for your content */
+    .custom-area {
+      background: linear-gradient(180deg, #fff 0%, #fff6f9 100%);
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Blur overlay for locked state */
+    .blur-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      border-radius: 12px;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .blur-overlay.hidden {
+      display: none;
+    }
+
+    .lock-icon {
+      font-size: 48px;
+      color: var(--accent-2);
+    }
+
+    .iframe-container {
+      width: 100%;
+      height: 500px;
+      border: 0;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(177, 13, 46, 0.1);
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Controls */
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(255, 59, 107, 0.18);
+      transition: transform .18s var(--smooth), box-shadow .18s var(--smooth);
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--accent-2);
+      border: 2px solid rgba(177, 13, 46, 0.08);
+      box-shadow: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(.998)
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none
+    }
+
+    /* Right column / sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .countdown {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .count-item {
+      background: linear-gradient(180deg, #fff, #fff9f9);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      border: 1px solid rgba(177, 13, 46, 0.05);
+    }
+
+    .count-value {
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--accent-2)
+    }
+
+    .count-label {
+      font-size: 12px;
+      color: #9b5b62;
+      margin-top: 6px
+    }
+
+    /* Modal (birthday code) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.25));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 14px;
+      padding: 20px;
+      background: linear-gradient(180deg, #fff, #fff7f8);
+      box-shadow: 0 18px 60px rgba(11, 6, 6, 0.28);
+      border: 1px solid rgba(177, 13, 46, 0.06);
+    }
+
+    .modal h2 {
+      margin: 0 0 8px 0;
+      color: var(--accent-2)
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(177, 13, 46, 0.08);
+      outline: none;
+      font-size: 14px;
+      background: transparent;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #8f4d56;
+      margin-top: 8px
+    }
+
+    /* Footer small */
+    .small {
+      font-size: 12px;
+      color: #8c4850
+    }
+
+    /* fireworks canvas sits on top */
+    #fireworks-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 98;
+    }
+
+    /* make canvas pointer events when active (we'll enable on click) */
+    .fireworks-active {
+      pointer-events: auto
+    }
+
+    /* Mode indicator */
+    .mode-indicator {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 100;
+      animation: fadeInOut 3s ease;
+      pointer-events: none;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Fireworks canvas (global) -->
+  <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
+
+  <!-- Birthday modal: unlocks the page when user enters a valid birthday code -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal card" role="document">
+      <header style="display:flex;align-items:center;gap:12px;">
+        <div class="logo" aria-hidden="true">❤</div>
+        <div>
+          <h2 id="modalTitle">Enter Your Birth Date</h2>
+          <p class="small">Type your birth Date as the code to unlock — format <strong>DDMMYYYY</strong> or
+            <strong>YYYY-MM-DD</strong>.</p>
+        </div>
+      </header>
+
+      <div style="margin-top:12px;">
+        <div class="input-row">
+          <input id="birthdayInput" type="text" inputmode="numeric" placeholder="e.g. 15021999 or 1999-02-15"
+            aria-label="Birthday code" />
+          <button id="unlockBtn" class="btn">Unlock</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+          <p class="hint">This website uses the birthday only as a code. It won't be sent anywhere — stored locally in
+            your browser session if you choose.</p>
+        </div>
+        <p id="modalError" class="small" style="color:#9b2d3a;margin-top:8px;min-height:18px"></p>
+      </div>
+    </div>
+  </div>
+
+  <main class="container" id="mainContent" aria-hidden="true">
+    <section class="panel">
+      <header class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="logo" aria-hidden="true">❤</div>
+          <div>
+            <h1>My Beloved Inu Shrestha</h1>
+            <p class="lead">It feels unreal that we'll finally meet. We've had love, fights, and everything in between, but it only made us stronger. I can't wait to see you and start our next chapter together.</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- Flower animation area with blur overlay -->
+      <div class="card custom-area">
+        <!-- Blur overlay that shows when content is locked -->
+        <div id="blurOverlay" class="blur-overlay">
+          <div class="lock-icon">🔒</div>
+          <h3 style="color: var(--accent-2); margin: 0; text-align: center;">Content Locked</h3>
+          <p style="color: var(--muted); text-align: center; max-width: 300px; margin: 0;">
+            Enter your birthday code to unlock this content
+          </p>
+          <button id="unlockFromOverlay" class="btn">Enter Code</button>
+        </div>
+        
+        <!-- Flower content -->
+        <div class="iframe-container">
+          <iframe src="flower.html" title="Flower Animation"></iframe>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;justify-content:space-between;align-items:center">
+        <p class="small">Beautiful flower for my Beautiful wifey!!!</p>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button id="fireBtn" class="btn">Fireworks</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="card">
+        <h3 style="margin:0 0 10px 0;color:var(--accent-2)">Countdown to Meet Me</h3>
+        <div id="countdown" class="countdown" aria-live="polite">
+          <div class="count-item">
+            <div class="count-value" id="days">0</div>
+            <div class="count-label">Days</div>
+          </div>
+          <div class="count-item">
+            <div class="count-value" id="hours">00</div>
+            <div class="count-label">Hours</div>
+          </div>
+          <div class="count-item">
+            <div class="count-value" id="minutes">00</div>
+            <div class="count-label">Minutes</div>
+          </div>
+          <div class="count-item">
+            <div class="count-value" id="seconds">00</div>
+            <div class="count-label">Seconds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4 style="margin:0 0 6px 0;color:var(--accent-2)">Birthday</h4>
+        <p class="small" style="margin:0 0 10px 0">You Birthday: <strong id="userBadge">Guest</strong></p>
+        <p class="small" style="margin:0 0 12px 0">Tips: Enter <code>DDMMYYYY</code> (e.g. 15021999) or
+          <code>YYYY-MM-DD</code>.</p>
+        <div style="display:flex;gap:8px">
+          <button id="editCodeBtn" class="btn secondary">Edit Code</button>
+          <button id="clearBtn" class="btn" title="Clear saved code">Clear & Reload</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      // Elements
+      const modal = document.getElementById('modal');
+      const birthdayInput = document.getElementById('birthdayInput');
+      const unlockBtn = document.getElementById('unlockBtn');
+      const modalError = document.getElementById('modalError');
+      const blurOverlay = document.getElementById('blurOverlay');
+      const unlockFromOverlay = document.getElementById('unlockFromOverlay');
+
+      const mainContent = document.getElementById('mainContent');
+      const userBadge = document.getElementById('userBadge');
+      const editCodeBtn = document.getElementById('editCodeBtn');
+      const clearBtn = document.getElementById('clearBtn');
+
+      const fireBtn = document.getElementById('fireBtn');
+
+      const daysEl = document.getElementById('days');
+      const hoursEl = document.getElementById('hours');
+      const minutesEl = document.getElementById('minutes');
+      const secondsEl = document.getElementById('seconds');
+
+      // Fireworks canvas
+      const canvas = document.getElementById('fireworks-canvas');
+      const ctx = canvas.getContext('2d');
+      let cw = canvas.width = window.innerWidth;
+      let ch = canvas.height = window.innerHeight;
+      let particles = [];
+      let animId = null;
+
+      // Target meeting date (15 Dec 2025)
+      const meetingDate = new Date(Date.UTC(2025, 11, 15, 0, 0, 0)); // UTC midnight Dec 15, 2025
+
+      // Utilities
+      function formatTwo(n) { return String(n).padStart(2, '0'); }
+
+      // Birthday validation: accepts DDMMYYYY or YYYY-MM-DD
+      function parseBirthdayCode(input) {
+        input = (input || '').trim();
+        const ddmmyyyy = /^([0-3][0-9])([0-1][0-9])([1-9][0-9]{3})$/;
+        const iso = /^([1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+        if (ddmmyyyy.test(input)) {
+          const m = input.match(ddmmyyyy);
+          const day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+          return { day, month, year, raw: input };
+        } else if (iso.test(input)) {
+          const m = input.match(iso);
+          const year = parseInt(m[1], 10), month = parseInt(m[2], 10), day = parseInt(m[3], 10);
+          return { day, month, year, raw: input };
+        }
+        return null;
+      }
+
+      // Show temporary mode indicator
+      function showModeIndicator(text) {
+        const indicator = document.createElement('div');
+        indicator.className = 'mode-indicator';
+        indicator.textContent = text;
+        document.body.appendChild(indicator);
+        
+        // Remove after animation completes
+        setTimeout(() => {
+          if (indicator.parentNode) {
+            indicator.parentNode.removeChild(indicator);
+          }
+        }, 3000);
+      }
+
+      // Function to unlock the content
+      function unlockContent() {
+        // Hide modal and blur overlay
+        modal.style.display = 'none';
+        blurOverlay.classList.add('hidden');
+        mainContent.removeAttribute('aria-hidden');
+        
+        // Enable fireworks button
+        fireBtn.disabled = false;
+      }
+
+      // Function to lock the content
+      function lockContent() {
+        // Show modal and blur overlay
+        modal.style.display = 'flex';
+        blurOverlay.classList.remove('hidden');
+        mainContent.setAttribute('aria-hidden', 'true');
+        
+        // Disable fireworks button
+        fireBtn.disabled = true;
+      }
+
+      // Unlock with proper validation
+      unlockBtn.addEventListener('click', () => {
+        modalError.textContent = '';
+        const val = birthdayInput.value.trim();
+        
+        // Use the parser function for flexible input
+        const parsed = parseBirthdayCode(val);
+        if (parsed && parsed.day === 13 && parsed.month === 7 && parsed.year === 2001) {
+          sessionStorage.setItem('birthdayCode', val);
+          sessionStorage.setItem('isUnlocked', 'true');
+          userBadge.textContent = `${String(parsed.day).padStart(2, '0')}-${String(parsed.month).padStart(2, '0')}-${parsed.year}`;
+          unlockContent();
+        } else {
+          modalError.textContent = 'Birthday code incorrect.';
+          birthdayInput.focus();
+        }
+      });
+
+      // Unlock from overlay button
+      unlockFromOverlay.addEventListener('click', () => {
+        modal.style.display = 'flex';
+        birthdayInput.focus();
+      });
+
+      // Allow pressing Enter
+      birthdayInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { unlockBtn.click(); }
+      });
+
+      // Edit previously saved code
+      editCodeBtn.addEventListener('click', () => {
+        const saved = sessionStorage.getItem('birthdayCode') || '';
+        birthdayInput.value = saved;
+        modal.style.display = 'flex';
+        mainContent.setAttribute('aria-hidden', 'true');
+        birthdayInput.focus();
+      });
+
+      // Clear saved and refresh page
+      clearBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('birthdayCode');
+        sessionStorage.removeItem('isUnlocked');
+        // Show confirmation and reload
+        if (confirm('Birthday code will be cleared and page will reload. Continue?')) {
+          location.reload();
+        }
+      });
+
+      // Initialize: if saved code exists and is valid, auto-unlock
+      (function initUnlock() {
+        const saved = sessionStorage.getItem('birthdayCode');
+        const isUnlocked = sessionStorage.getItem('isUnlocked') === 'true';
+        
+        if (saved && isUnlocked) {
+          const parsed = parseBirthdayCode(saved);
+          if (parsed && parsed.day === 13 && parsed.month === 7 && parsed.year === 2001) {
+            userBadge.textContent = `${String(parsed.day).padStart(2, '0')}-${String(parsed.month).padStart(2, '0')}-${parsed.year}`;
+            unlockContent();
+          } else {
+            // Invalid saved code, lock content
+            lockContent();
+          }
+        } else {
+          // No saved code or not unlocked, lock content
+          lockContent();
+        }
+      })();
+
+      // COUNTDOWN logic
+      function updateCountdown() {
+        const now = new Date();
+        // Use local timezone for user-friendly display
+        const nowMs = now.getTime();
+        const diff = meetingDate.getTime() - nowMs;
+        if (diff <= 0) {
+          daysEl.textContent = '0';
+          hoursEl.textContent = '00';
+          minutesEl.textContent = '00';
+          secondsEl.textContent = '00';
+          return;
+        }
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = Math.floor(totalSeconds / (3600 * 24));
+        const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        daysEl.textContent = String(days);
+        hoursEl.textContent = formatTwo(hours);
+        minutesEl.textContent = formatTwo(minutes);
+        secondsEl.textContent = formatTwo(seconds);
+      }
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+
+      // FIREWORKS implementation (simple particle system)
+      const colors = ['#ff4b7a', '#ffd86a', '#ff6a89', '#ff2f66', '#ff9fb8', '#ffd1e1'];
+      function resizeCanvas() {
+        cw = canvas.width = window.innerWidth;
+        ch = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+
+      function random(min, max) { return Math.random() * (max - min) + min; }
+
+      class Particle {
+        constructor(x, y, color, angle, speed, life) {
+          this.x = x; this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.life = life;
+          this.age = 0;
+          this.color = color;
+          this.size = random(1.6, 3.6);
+        }
+        update(dt) {
+          this.age += dt;
+          // gravity-like
+          this.vy += 0.02;
+          this.x += this.vx * dt * 50;
+          this.y += this.vy * dt * 50;
+        }
+        draw(ctx) {
+          const t = Math.max(0, 1 - this.age / this.life);
+          ctx.globalAlpha = t;
+          ctx.beginPath();
+          ctx.fillStyle = this.color;
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        isAlive() { return this.age < this.life; }
+      }
+
+      let lastTime = performance.now();
+      function animateParticles(now) {
+        const dt = Math.min(0.04, (now - lastTime) / 1000);
+        lastTime = now;
+        ctx.clearRect(0, 0, cw, ch);
+        // update
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.update(dt);
+          if (!p.isAlive()) {
+            particles.splice(i, 1);
+          }
+        }
+        // draw additive glow
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        particles.forEach(p => p.draw(ctx));
+        ctx.restore();
+        if (particles.length > 0) animId = requestAnimationFrame(animateParticles);
+        else { cancelAnimationFrame(animId); animId = null; canvas.classList.remove('fireworks-active'); }
+      }
+
+      function spawnFirework(x, y) {
+        const count = 28 + Math.floor(Math.random() * 28);
+        const hue = colors[Math.floor(Math.random() * colors.length)];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.PI * 2 * (i / count) + random(-0.08, 0.08);
+          const speed = random(1.6, 4.6);
+          const life = random(0.9, 1.8);
+          particles.push(new Particle(x, y, hue, angle, speed, life));
+        }
+        // start animation loop if not running
+        if (!animId) {
+          lastTime = performance.now();
+          animId = requestAnimationFrame(animateParticles);
+        }
+        canvas.classList.add('fireworks-active');
+      }
+
+      // Smart click handler for fireworks - only outside custom area and when unlocked
+      document.body.addEventListener('click', (e) => {
+        // If content is locked, don't allow fireworks
+        if (blurOverlay && !blurOverlay.classList.contains('hidden')) {
+          return;
+        }
+        
+        // If the click is inside the custom area, do nothing
+        if (e.target.closest('.custom-area')) {
+          return;
+        }
+        
+        // If the click is on an interactive element, do nothing
+        const tag = e.target.tagName.toLowerCase();
+        if (['button', 'input', 'textarea', 'a'].includes(tag)) {
+          return;
+        }
+        
+        // Otherwise, spawn fireworks
+        spawnFirework(e.clientX, e.clientY);
+        showModeIndicator('🎆 Click anywhere for fireworks!');
+      });
+
+      fireBtn.addEventListener('click', (e) => {
+        // Only allow fireworks if content is unlocked
+        if (blurOverlay && !blurOverlay.classList.contains('hidden')) {
+          alert('Please enter your birthday code first to unlock fireworks!');
+          modal.style.display = 'flex';
+          return;
+        }
+        
+        // spawn at center of custom area
+        const rect = document.querySelector('.custom-area').getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 3;
+        spawnFirework(x, y);
+        showModeIndicator('🎆 Fireworks!');
+      });
+
+      // Accessibility: close modal with Escape (if visible)
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display !== 'none') {
+          modal.style.display = 'none';
+        }
+      });
+
+      // Animation cleanup when page becomes inactive
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden && animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
+      });
+
+      // Initial canvas sizing
+      resizeCanvas();
+    })();
+  </script>
+</body>
+
+</html>
